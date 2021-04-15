@@ -4,6 +4,7 @@ from werkzeug.security import safe_str_cmp
 db = SQLAlchemy()
 
 class User(db.Model):
+    __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(120), unique=False, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -17,6 +18,7 @@ class User(db.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "username": self.username,
             "email": self.email,
             "address": self.address
@@ -26,6 +28,8 @@ class User(db.Model):
 
 class ShopCart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    name= db.Column(db.String(250))
+    precio=db.Column(db.Integer)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     
@@ -35,7 +39,9 @@ class ShopCart(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id
+            "id": self.id,
+            "name": self.name,
+            "precio": self.precio
         }
 
 class Service(db.Model):

@@ -14,15 +14,17 @@ from flask_jwt_extended import JWTManager
 
 api = Blueprint('api', __name__)
 
+#Devuelve servicios fetch-GET
 
 @api.route('/', methods=['GET'])
-def hello():
-    
-    response_body = {
-        "message": "Hello! I'm a message that came from the backend"
-    }
+def get_service():
+    service = Service.query.all()
+    all_services = list(map(lambda service: service.serialize(), service))
+    return jsonify(all_services), 200
 
-    return jsonify(response_body), 200
+#*******************************************************************************#
+
+#Sign Up fetch-POST
 
 @api.route('/signup', methods=['POST'])
 def create_user():
@@ -63,6 +65,11 @@ def create_user():
 
     return jsonify(response_body),200
 
+#******************************************************************************************
+
+#Login fetch-POST JWT Auth
+# todo match username + password
+
 @api.route("/login", methods=["POST"])
 def login():
     username = request.json.get("username", None)
@@ -82,4 +89,31 @@ def login():
     expiration = timedelta(days=1)
     access_token = create_access_token(identity=user, expires_delta=expiration)
     return jsonify('The login has been successful.', {'token':access_token}), 200
+
+#**********************************************************************************************
+
+@api.route('/shopCart', methods=['POST'])
+@jwt_required()
+def create_shopCart():
+    current_user_id = get_jwt_identity()
+    
+    body = request.get_json()
+    
+    if body is None:
+        return 'El cuerpo del request es Null', 400
+    if 'name' not in body:
+        return 'Especificar nombre del favorito', 400
+    
+    shopCart = ShopCart()
+    shopCart.user_id = current_user_id
+    shopCart.name = body['name']
+    shopCart.precio = body['precio']
+
+    db.session.add(shopCart) # agrega el favorito a la base de datos
+    db.session.commit() # guarda los cambios
+
+    user_shopCart = ShopCart.query.filter_by(user_id=current_user_id)
+    user_shopCart = list(map(lambda x: x.serialize(), user_shopCart))
+
+    return jsonify(user_shopCart), 200
 
