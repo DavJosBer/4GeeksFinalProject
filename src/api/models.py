@@ -9,7 +9,8 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     address = db.Column(db.String(250)) 
-    client = db.relationship('Ordenes', backref='user', lazy=True)
+    client = db.relationship('ShopCart', backref='user', lazy=True)
+    client_order = db.relationship('Ordenes', backref='user', lazy=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -23,7 +24,7 @@ class User(db.Model):
     def check_password(self, password):
         return safe_str_cmp(password, self.password)
 
-class Ordenes(db.Model):
+class ShopCart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -41,8 +42,9 @@ class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=False, nullable=False)
     description = db.Column(db.String(250), unique=True)
-    costo = db.Column(db.Integer)
-    client = db.relationship('Ordenes', backref='service', lazy=True)
+    precio = db.Column(db.Integer)
+    client = db.relationship('ShopCart', backref='service', lazy=True)
+    client_order = db.relationship('Ordenes', backref='service', lazy=True)
 
     def __repr__(self):
         return '<Service %s>' % self.name
@@ -50,5 +52,23 @@ class Service(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name
+            "name": self.name,
+            "description": self.description,
+            "precio": self.precio
+        }
+
+class Ordenes(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    event_date = db.Column(db.String(250), unique=False, nullable=True)
+    event_address = db.Column(db.String(512), unique=False, nullable=True)
+    
+
+    def __repr__(self):
+        return '<Ordenes %s>' % self.id
+
+    def serialize(self):
+        return {
+            "id": self.id
         }

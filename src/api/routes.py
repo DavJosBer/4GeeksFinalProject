@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 import re
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Ordenes, Service
+from api.models import db, User, Ordenes, Service, ShopCart
 from api.utils import generate_sitemap, APIException
 from datetime import timedelta
 from flask_jwt_extended import current_user
@@ -31,23 +31,23 @@ def create_user():
     user = User()
     
     if 'username' not in body:
-        return "username required",400
+        return jsonify({"msg": "username required"}),400
     if 'email' not in body:
-        return "email required",400
+        return jsonify({"msg": "email required"}),400
     if 'password' not in body:
-        return 'password required',400
+        return jsonify({"msg": "password required"}),400
     if not re.match('^(\w|\.|\_|\-)+[@](\w|\_|\-|\.)+[.]\w{2,8}$', body['email']):
-        return 'enter a valid format check your email'
+        return jsonify({"msg": "enter a valid format - check your email"})
     if not re.match('^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W])[^\n\t]{8,20}$', body['password']):
-        return 'Password must contain the following: a lowercase letter, a capital letter, a number, one special character and minimum 8 characters'
+        return jsonify({"msg": "Password must contain the following: a lowercase letter, a capital letter, a number, one special character and minimum 8 characters"})
 
     username = User.query.filter_by(username=body['username']).first()
     email = User.query.filter_by(email=body['email']).first()
 
     if username:
-        return 'This username already exists. Check your username'
+        return jsonify({"msg": "This username already exists. Check your username"})
     if email:
-        return 'This email already exists. Check your email'
+        return jsonify({"msg": "This email already exists. Check your email"})
     
     user.username = body['username']
     user.email = body['email']
@@ -82,3 +82,4 @@ def login():
     expiration = timedelta(days=1)
     access_token = create_access_token(identity=user, expires_delta=expiration)
     return jsonify('The login has been successful.', {'token':access_token}), 200
+
