@@ -12,6 +12,8 @@ from api.routes import api
 from api.admin import setup_admin
 #from models import Person
 
+from flask_jwt_extended import JWTManager #Llama la librería JWT
+
 ENV = os.getenv("FLASK_ENV")
 static_file_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
@@ -25,6 +27,7 @@ else:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 MIGRATE = Migrate(app, db)
+jwt = JWTManager(app) #Inicializar JWT con el atributo config de app
 db.init_app(app)
 
 # Allow CORS requests to this API
@@ -35,6 +38,15 @@ setup_admin(app)
 
 # Add all endpoints form the API with a "api" prefix
 app.register_blueprint(api, url_prefix='/api')
+
+@jwt.user_identity_loader
+def user_identity_lookup(user):
+    return user.id
+
+@jwt.user_lookup_loader
+def user_lookup_callback(_jwt_header, jwt_data):
+    identity = jwt_data["sub"]
+    return User.query.filter_by(id=identity).one_or_none()
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
