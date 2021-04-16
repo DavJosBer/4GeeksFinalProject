@@ -16,11 +16,15 @@ api = Blueprint('api', __name__)
 
 #Devuelve servicios fetch-GET
 
-@api.route('/', methods=['GET'])
+@api.route('/hello', methods=['POST','GET'])
 def get_service():
-    service = Service.query.all()
-    all_services = list(map(lambda service: service.serialize(), service))
-    return jsonify(all_services), 200
+    #service = Service.query.all()
+    #all_services = list(map(lambda service: service.serialize(), service))
+    #return jsonify(all_services), 200
+    response_body = {
+        "message": "cualquier cosa"
+    }
+    return jsonify(response_body),200
 
 #*******************************************************************************#
 
@@ -92,6 +96,8 @@ def login():
 
 #**********************************************************************************************
 
+#shopCart access, add services
+
 @api.route('/shopCart', methods=['POST'])
 @jwt_required()
 def create_shopCart():
@@ -99,15 +105,11 @@ def create_shopCart():
     
     body = request.get_json()
     
-    if body is None:
-        return 'El cuerpo del request es Null', 400
-    if 'name' not in body:
-        return 'Especificar nombre del favorito', 400
-    
     shopCart = ShopCart()
     shopCart.user_id = current_user_id
-    shopCart.name = body['name']
+    shopCart.service_id = body['service_id']
     shopCart.precio = body['precio']
+    shopCart.cantidad = body['cantidad']
 
     db.session.add(shopCart) # agrega el favorito a la base de datos
     db.session.commit() # guarda los cambios
@@ -117,3 +119,24 @@ def create_shopCart():
 
     return jsonify(user_shopCart), 200
 
+#*********************************************************************
+
+#Delete articles in shopCart
+
+@api.route('/shopCart', methods=['DELETE'])
+@jwt_required()
+def delete_favorites():
+    current_user_id = get_jwt_identity()
+    body = request.get_json()
+    if body is None:
+        return 'El cuerpo del request es Null', 400
+    if 'id' not in body:
+        return 'Especificar nombre del favorito', 400
+    user_shopCart_id = ShopCart.query.filter_by(user_id=current_user_id, id=body['id']).first()
+    db.session.delete(user_shopCart_id) # elimina el favorito de la base de datos
+    db.session.commit() # guarda los cambios
+    user_shopCart_id = ShopCart.query.filter_by(user_id=current_user_id)
+    user_shopCart_id = list(map(lambda x: x.serialize(), user_shopCart_id))
+    return jsonify(user_shopCart_id), 200
+
+#************************************************************************

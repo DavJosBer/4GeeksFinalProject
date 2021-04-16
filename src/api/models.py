@@ -28,10 +28,10 @@ class User(db.Model):
 
 class ShopCart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name= db.Column(db.String(250))
-    precio=db.Column(db.Integer)
-    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
+    precio = db.Column(db.Integer)
+    cantidad = db.Column(db.Integer)
     
 
     def __repr__(self):
@@ -40,8 +40,9 @@ class ShopCart(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name,
-            "precio": self.precio
+            "cantidad": self.cantidad,
+            "precio": self.precio,
+            "service_id": self.service_id
         }
 
 class Service(db.Model):
