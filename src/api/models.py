@@ -12,6 +12,7 @@ class User(db.Model):
     address = db.Column(db.String(250)) 
     client = db.relationship('ShopCart', backref='user', lazy=True)
     client_order = db.relationship('Ordenes', backref='user', lazy=True)
+    client_recipt = db.relationship('Factura', backref='user', lazy=True)
 
     def __repr__(self):
         return '<User %r>' % self.username
@@ -52,6 +53,7 @@ class Service(db.Model):
     precio = db.Column(db.Integer)
     client = db.relationship('ShopCart', backref='service', lazy=True)
     client_order = db.relationship('Ordenes', backref='service', lazy=True)
+    client_recipt = db.relationship('Factura', backref='service', lazy=True)
 
     def __repr__(self):
         return '<Service %s>' % self.name
@@ -82,4 +84,21 @@ class Ordenes(db.Model):
             "service_id": self.service_id,
             "event_date": self.event_date,
             "event_address": self.event_address
+        }
+
+class Factura(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
+    total = db.Column(db.Integer)
+
+    def __repr__(self):
+        return '<Factura %s>' % self.id
+    
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "service_id": self.service_id,
+            "total": self.total
         }

@@ -3,7 +3,7 @@ This module takes care of starting the API Server, Loading the DB and Adding the
 """
 import re
 from flask import Flask, request, jsonify, url_for, Blueprint
-from api.models import db, User, Ordenes, Service, ShopCart
+from api.models import db, User, Ordenes, Service, ShopCart, Factura
 from api.utils import generate_sitemap, APIException
 from datetime import timedelta
 from flask_jwt_extended import current_user
@@ -169,3 +169,22 @@ def add_ordenes():
     user_orden = list(map(lambda x: x.serialize(), user_orden))
 
     return jsonify(user_orden), 200
+
+@api.route('/factura', methods=['POST'])
+@jwt_required()
+def add_factura():
+    current_user_id = get_jwt_identity() 
+    body = request.get_json()
+    factura = Factura()
+    factura.user_id = current_user_id
+    factura.service_id = body['service_id']
+    factura.total = body['total']
+
+    db.session.add(factura) # agrega el favorito a la base de datos
+    db.session.commit() # guarda los cambios
+
+    user_factura = Factura.query.filter_by(user_id=current_user_id)
+    user_factura = list(map(lambda x: x.serialize(), user_factura))
+
+    return jsonify(user_factura), 200
+
