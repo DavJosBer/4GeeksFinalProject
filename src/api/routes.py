@@ -151,6 +151,8 @@ def delete_favorites():
 
 #************************************************************************
 
+#Add Orders of defined user
+
 @api.route('/ordenes', methods=['POST'])
 @jwt_required()
 def add_ordenes():
@@ -170,6 +172,10 @@ def add_ordenes():
 
     return jsonify(user_orden), 200
 
+#****************************************************************
+
+#Add Recipt of defined user
+
 @api.route('/factura', methods=['POST'])
 @jwt_required()
 def add_factura():
@@ -188,3 +194,4 @@ def add_factura():
 
     return jsonify(user_factura), 200
 
+#***********************************************************************
