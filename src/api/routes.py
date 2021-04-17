@@ -16,7 +16,7 @@ api = Blueprint('api', __name__)
 
 #Devuelve servicios fetch-GET
 
-@api.route('/hello', methods=['POST','GET'])
+@api.route('/hello', methods=['GET'])
 def get_service():
     #service = Service.query.all()
     #all_services = list(map(lambda service: service.serialize(), service))
@@ -104,6 +104,16 @@ def create_shopCart():
     current_user_id = get_jwt_identity()
     
     body = request.get_json()
+
+    if body is None:
+        return jsonify({"msg": "Body Null"}),400
+    if 'service_id' not in body:
+        return jsonify({"msg": "Especifique id del servicio"}),400
+    if 'precio' not in body:
+        return jsonify({"msg": "Especifique precio del servicio"}),400
+    if 'cantidad' not in body:
+        return jsonify({"msg": "Especifique cantidad del servicio"}),400
+        
     
     shopCart = ShopCart()
     shopCart.user_id = current_user_id
@@ -129,9 +139,9 @@ def delete_favorites():
     current_user_id = get_jwt_identity()
     body = request.get_json()
     if body is None:
-        return 'El cuerpo del request es Null', 400
+        return jsonify({"msg": "Body Null"}),400
     if 'id' not in body:
-        return 'Especificar nombre del favorito', 400
+        return jsonify({"msg": "Especifique id del servicio"}),400
     user_shopCart_id = ShopCart.query.filter_by(user_id=current_user_id, id=body['id']).first()
     db.session.delete(user_shopCart_id) # elimina el favorito de la base de datos
     db.session.commit() # guarda los cambios
@@ -140,3 +150,22 @@ def delete_favorites():
     return jsonify(user_shopCart_id), 200
 
 #************************************************************************
+
+@api.route('/ordenes', methods=['POST'])
+@jwt_required()
+def add_ordenes():
+    current_user_id = get_jwt_identity() 
+    body = request.get_json()
+    orden = Ordenes()
+    orden.user_id = current_user_id
+    orden.service_id = body['service_id']
+    orden.event_date = body['event_date']
+    orden.event_address = body['event_address']
+
+    db.session.add(orden) # agrega el favorito a la base de datos
+    db.session.commit() # guarda los cambios
+
+    user_orden = Ordenes.query.filter_by(user_id=current_user_id)
+    user_orden = list(map(lambda x: x.serialize(), user_orden))
+
+    return jsonify(user_orden), 200

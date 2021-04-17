@@ -68,8 +68,8 @@ class Ordenes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     service_id = db.Column(db.Integer, db.ForeignKey('service.id'))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    event_date = db.Column(db.String(250), unique=False, nullable=True)
-    event_address = db.Column(db.String(512), unique=False, nullable=True)
+    event_date = db.Column(db.String(250), unique=False)
+    event_address = db.Column(db.String(512), unique=False)
     
 
     def __repr__(self):
@@ -77,5 +77,9 @@ class Ordenes(db.Model):
 
     def serialize(self):
         return {
-            "id": self.id
+            "id": self.id,
+            "user_id": self.user_id,
+            "service_id": self.service_id,
+            "event_date": self.event_date,
+            "event_address": self.event_address
         }

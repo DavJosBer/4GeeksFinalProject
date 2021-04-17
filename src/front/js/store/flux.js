@@ -21,9 +21,9 @@ const getState = ({ getStore, getActions, setStore }) => {
 				getActions().changeColor(0, "green");
 			},
 
-			getMessage: () => {
+			getMessage: async () => {
 				// fetching data from the backend
-				fetch(process.env.BACKEND_URL + "https://3001-orange-warbler-s90p0vg7.ws-us03.gitpod.io/api/hello")
+				let result = await fetch("https://3001-copper-donkey-d7hu5z1c.ws-us03.gitpod.io/api/hello")
 					.then(resp => resp.json())
 					.then(data => setStore({ message: data.message }))
 					.catch(error => console.log("Error loading message from backend", error));
